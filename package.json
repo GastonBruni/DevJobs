@@ -1,0 +1,26 @@
+{
+  "name": "devjobs",
+  "version": "1.0.0",
+  "description": "Portal DevJobs con NodeJS, Handlebars Moongoose",
+  "main": "index.js",
+  "scripts": {
+    "start" : "nodemon ./index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GastonBruni/DevJobs.git"
+  },
+  "author": "Gaston Bruni",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GastonBruni/DevJobs/issues"
+  },
+  "homepage": "https://github.com/GastonBruni/DevJobs#readme",
+  "dependencies": {
+    "express": "^4.17.2",
+    "express-handlebars": "^6.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}

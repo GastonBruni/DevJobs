@@ -1,7 +1,15 @@
+const mongoose = require('mongoose');
+require('./config/db');
+
 const express = require('express');
 const exphbs = require('express-handlebars');
 const path = require('path');
 const router = require('./routes');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+
+require('dotenv').config({ path : 'variables.env'});
 
 const app = express();
 
@@ -24,6 +32,19 @@ app.set('view engine', 'handlebars');
 // static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(cookieParser());
+
+app.use(session({
+    secret: process.env.SECRETO,
+    KEY: process.env.KEY,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ 
+        mongoUrl: process.env.DATABASE,
+        dbName:'devjobs'
+    })
+}));
+
 app.use('/', router());
 
-app.listen(5000); // Puerto
+app.listen(process.env.PUERTO); // Puerto

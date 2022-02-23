@@ -15,7 +15,7 @@
   \**************************/
 /***/ (() => {
 
-eval("\n\n//# sourceURL=webpack://devjobs/./public/js/app.js?");
+eval("document.addEventListener('DOMContentLoaded', function () {\n  var skills = document.querySelector('.lista-conocimientos');\n\n  if (skills) {\n    skills.addEventListener('click', agregarSkills);\n  }\n});\nvar skills = new Set();\n\nvar agregarSkills = function agregarSkills(e) {\n  if (e.target.tagName === 'LI') {\n    if (e.target.classList.contains('activo')) {\n      // quitarlo del set y quitar la clase\n      skills[\"delete\"](e.target.textContent);\n      e.target.classList.remove('activo');\n    } else {\n      // agregarlo al set y agregar la clase\n      skills.add(e.target.textContent);\n      e.target.classList.add('activo');\n    }\n  }\n};\n\n//# sourceURL=webpack://devjobs/./public/js/app.js?");
 
 /***/ })
 

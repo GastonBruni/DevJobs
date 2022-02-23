@@ -19,6 +19,7 @@ app.engine(
     exphbs.engine({
         layoutsDir: './views/layouts/',
         defaultLayout: 'layout',
+        helpers: require('./helpers/handlebars'),
         extname: 'handlebars',
         runtimeOptions: {
             allowProtoPropertiesByDefault: true,

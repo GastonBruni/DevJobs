@@ -28,7 +28,7 @@ exports.validarRegistro = async (req, res, next) => {
             nombrePagina: 'Crea una cuenta en Devjobs',
             tagline: 'Comienza a publicar tus vacantes gratis, solo debes crear una cuenta',
             mensajes: req.flash()
-        })
+        });
         return;
     }
  

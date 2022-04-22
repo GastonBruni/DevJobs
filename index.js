@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bodyParser = require('body-parser');
+const flash = require('connect-flash');
 
 require('dotenv').config({ path : 'variables.env'});
 
@@ -50,6 +51,15 @@ app.use(session({
         dbName:'devjobs'
     })
 }));
+
+// Alertas y flash messages
+app.use(flash());
+
+// Crear nuestro middleware
+app.use((req, res, next) => {
+    res.locals.mensajes = req.flash();
+    next();
+});
 
 app.use('/', router());
 

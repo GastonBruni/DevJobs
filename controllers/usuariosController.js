@@ -1,6 +1,7 @@
 const moongose = require('mongoose');
 const Usuarios = moongose.model('Usuarios');
 const {body,validationResult} = require('express-validator');
+const { request } = require('express');
 
 exports.formCrearCuenta = (req,res) => {
     res.render('crear-cuenta', {
@@ -36,14 +37,23 @@ exports.validarRegistro = async (req, res, next) => {
     next();
 }
 
-
 exports.crearUsuario = async (req, res, next) => {
     // crear el usuario
     const usuario = new Usuarios(req.body);
 
-    const nuevoUsuario = await usuario.save();
+    try {
+        await usuario.save();
+        res.redirect('/iniciar-sesion');
+    } catch (error) {
+        req.flash('error', error);
+        res.redirect('/crear-cuenta');
+    }
 
-    if(!nuevoUsuario) return next();
+}
 
-    res.redirect('/iniciar-sesion');
+// formulario para iniciar sesion
+exports.formIniciarSesion = (req,res) => {
+    res.render('iniciar-sesion',{
+        nombrePagina: 'Iniciar Sesion en DevJobs'
+    })
 }

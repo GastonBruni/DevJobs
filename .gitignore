@@ -6,7 +6,7 @@ bin-release/
 
 # Other files and folders
 .settings/
-variables.env
+.env
 
 # Executables
 *.swf

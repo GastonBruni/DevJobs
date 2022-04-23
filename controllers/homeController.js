@@ -8,10 +8,10 @@ exports.mostrarTrabajos = async (req, res, next) => {
     if(!vacantes) return next();
 
     res.render('home', {
-        nombrePagina: 'devJobs',
-        tagline: 'Encuentra y Pública trabajos para Desarrolladores Web',
+        nombrePagina : 'devJobs',
+        tagline: 'Encuentra y Pública Trabajos para Desarrolladores Web',
         barra: true,
         boton: true,
         vacantes
-    });
+    })
 }

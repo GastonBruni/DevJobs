@@ -15,6 +15,9 @@ exports.agregarVacante = async (req, res) => {
    // crear arreglo de habilidades (skills)
    vacante.skills = req.body.skills.split(',');
 
+   // usuario autor de la vancate
+   vacante.autor = req.user._id;
+
     //almacenarlo en la base de datos
     const nuevaVacante = await vacante.save();
 

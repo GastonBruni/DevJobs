@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 const Vacante = mongoose.model('Vacante');
+const { body, validationResult } = require("express-validator"); 
 
 exports.formularioNuevaVacante = (req, res) => {
     res.render('nueva-vacante', {
         nombrePagina: 'Nueva Vacante',
-        tagline: 'Llena el formulario y publica tu vacante'
+        tagline: 'Llena el formulario y publica tu vacante',
+        cerrarSesion: true,
+        nombre: req.user.nombre
     });
 }
 
@@ -46,7 +49,9 @@ exports.formEditarVacante = async(req,res,next) => {
 
     res.render('editar-vacante', {
         vacante,
-        nombrePagina: `Editar - ${vacante.titulo}`
+        nombrePagina: `Editar - ${vacante.titulo}`,
+        cerrarSesion: true,
+        nombre: req.user.nombre
     })
 }
 
@@ -62,3 +67,34 @@ exports.editarVacante = async (req,res) => {
 
     res.redirect(`/vacantes/${vacante.url}`);
 }
+
+// sanitizar y validar el formulario de vacantes
+exports.validarVacante = async (req, res, next) => {
+    // Sanitizar
+    const rules = [
+        body("titulo").not().isEmpty().withMessage("Agrega un Titulo a la Vacante").escape(),
+        body("empresa").not().isEmpty().withMessage("Agrega una Empresa").escape(),
+        body("ubicacion").not().isEmpty().withMessage("Agrega una Ubicación").escape(),
+        body("contrato").not().isEmpty().withMessage("Selecciona el Tipo de Contrato").escape(),
+        body("skills").not().isEmpty().withMessage("Agrega al menos una habilidad").escape(),
+      ];
+
+      await Promise.all(rules.map((validation) => validation.run(req)));
+      const errores = validationResult(req);
+    // validar
+    if(errores) {
+        // Recargar la vista con los errores
+        req.flash("error",errores.array().map((error) => error.msg));
+
+            res.render('nueva-vacante', {
+                nombrePagina: 'Nueva Vacante',
+                tagline: 'Llena el formulario y publica tu vacante',
+                cerrarSesion: true,
+                nombre : req.user.nombre,
+                mensajes: req.flash()
+            });
+            return;
+        }
+        next();
+    }
+ 

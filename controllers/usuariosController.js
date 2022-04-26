@@ -95,7 +95,6 @@ exports.validarPerfil = async (req, res, next) => {
         body("nombre").isEmpty().escape(),
     ];
     
-
       await Promise.all(rules.map((validation) => validation.run(req)));
       const errores = validationResult(req);
     // validar

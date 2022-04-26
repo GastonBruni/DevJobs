@@ -1,19 +1,28 @@
+import axios from 'axios';
+import Swal from 'sweetalert2';
+
 document.addEventListener('DOMContentLoaded', () => {
     const skills = document.querySelector('.lista-conocimientos');
 
-    // Limpiar las alertas
-    let alertas = document.querySelector('.alertas');
+     // Limpiar las alertas
+     let alertas = document.querySelector('.alertas');
 
-    if(alertas) {
-        limpiarAlertas();
-    }
+     if(alertas) {
+         limpiarAlertas();
+     }
 
     if(skills) {
         skills.addEventListener('click', agregarSkills);
-
-        // Una vez que estamos en editas, llamar la función
+        // una vez que estamos en editar, llamar la función
         skillsSeleccionados();
     }
+
+    const vacantesListado = document.querySelector('.panel-administracion');
+
+    if(vacantesListado){
+        vacantesListado.addEventListener('click', accionesListado);
+    }
+
 })
 
 const skills = new Set();
@@ -44,6 +53,7 @@ const skillsSeleccionados = () => {
     // Inyectarlo en el hidden
     const skillsArray = [...skills]
     document.querySelector('#skills').value = skillsArray;
+
 }
 
 const limpiarAlertas = () => {
@@ -56,4 +66,52 @@ const limpiarAlertas = () => {
             clearInterval(interval);
         }
     }, 2000);
+}
+
+// Eliminar vacantes
+const accionesListado = e => {
+    e.preventDefault();
+    
+    if(e.target.dataset.eliminar){
+        // eliminar por axios
+        Swal.fire({
+            title: '¿Confirmar Eliminación?',
+            text: "Una vez eliminada, no se puede recuperar",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, Eliminar',
+            cancelButtonText : 'No, Cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+
+                // enviar la peticion con axios
+                const url = `${location.origin}/vacantes/eliminar/${e.target.dataset.eliminar}`;
+
+                // Axios para eliminar el registro
+                axios.delete(url, { params: {url}}).then(function(respuesta){
+                    if(respuesta.status === 200) {
+                        Swal.fire(
+                            'Eliminado',
+                            respuesta.data,
+                            'success'
+                        );
+
+                        // TODO: Eliminar del DOM
+                        e.target.parentElement.parentElement.parentElement.removeChild(e.target.parentElement.parentElement);
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        type:'error',
+                        title: 'Hubo un error',
+                        text: 'No se pudo eliminar'
+                    })
+                })
+            }
+          })
+    } else if (e.target.tagName === 'A'){
+        window.location.href = e.target.href;
+    }
 }

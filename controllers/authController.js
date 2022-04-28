@@ -13,7 +13,7 @@ exports.autenticarUsuario = passport.authenticate('local', {
 exports.verificarUsuario = (req, res, next) => {
 
     // revisar el usuario
-    if(req.isAuthenticated()){
+    if (req.isAuthenticated()) {
         return next(); // esta autenticado
     }
 
@@ -27,17 +27,18 @@ exports.mostrarPanel = async (req, res) => {
     // consultar el usuario autenticado
     const vacantes = await Vacante.find({ autor: req.user._id });
 
-    res.render('administracion',{ 
+    res.render('administracion', {
         nombrePagina: 'Panel de Administración',
         tagline: 'Crea y Administra tus vacantes desde aquí',
         cerrarSesion: true,
         nombre: req.user.nombre,
+        imagen: req.user.imagen,
         vacantes
     })
 }
 
-exports.cerrarSesion = (req,res) => {
+exports.cerrarSesion = (req, res) => {
     req.logout();
-    req.flash('correcto','Cerraste Sesión Correctamente.');
+    req.flash('correcto', 'Cerraste Sesión Correctamente.');
     return res.redirect('/iniciar-sesion');
 }

@@ -19,13 +19,14 @@ const usuarioSchema = new mongoose.Schema({
         trim: true,
     },
     token: String,
-    expira: Date
+    expira: Date,
+    imagen: String
 });
 
 // Metodo para hashear los passwords
-usuarioSchema.pre('save', async function(next){
+usuarioSchema.pre('save', async function (next) {
     // si el password ya esta hasheado
-    if(!this.isModified('password')){
+    if (!this.isModified('password')) {
         return next(); // deten la ejecución
     }
     // si no esta hasheado
@@ -34,17 +35,17 @@ usuarioSchema.pre('save', async function(next){
     next();
 });
 // Enviar alerta cuando un usuario ya esta registrado
-usuarioSchema.post('save', function(error, doc, next){
-    if(error.name === 'MongoServerError' && error.code ===  11000){
+usuarioSchema.post('save', function (error, doc, next) {
+    if (error.name === 'MongoServerError' && error.code === 11000) {
         next('Ese correo ya esta registrado');
-    }else{
+    } else {
         next(error);
     }
 });
 
 // Autenticar Usuarios
 usuarioSchema.methods = {
-    compararPassword: function(password) {
+    compararPassword: function (password) {
         return bcrypt.compareSync(password, this.password);
     }
 }

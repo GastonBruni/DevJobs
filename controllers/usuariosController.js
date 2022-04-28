@@ -1,9 +1,55 @@
 const moongose = require('mongoose');
 const Usuarios = moongose.model('Usuarios');
-const {body,validationResult} = require('express-validator');
+const { body, validationResult } = require('express-validator');
 const { request } = require('express');
+const multer = require('multer');
+const shortid = require('shortid');
 
-exports.formCrearCuenta = (req,res) => {
+exports.subirImagen = (req, res, next) => {
+    upload(req, res, function (error) {
+        if (error) {
+            if (error instanceof multer.MulterError) {
+                if(error.code === 'LIMIT_FILE_SIZE') {
+                    req.flash('error','El archvio es muy grande: Máximo 100kb');
+                } else {
+                    req.flash('error', error.message);
+                }
+            } else {
+                req.flash('error', error.message);
+            }
+            res.redirect('/administracion');
+            return;
+        } else {
+            return next();
+        }
+    });
+}
+
+// Opciones de Multer
+const configuracionMulter = {
+    limits: { fileSize: 100000 },
+    storage: fileStorage = multer.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, __dirname + '../../public/uploads/perfiles');
+        },
+        filename: (req, file, cb) => {
+            const extension = file.mimetype.split('/')[1];
+            cb(null, (`${shortid.generate()}.${extension}`));
+        }
+    }),
+    fileFilter(req, file, cb) {
+        if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+            // el callback se ejecuta como true o false true: cuando la imagen se acepta
+            cb(null, true);
+        } else {
+            cb(new Error('Formato No Válido'), false);
+        }
+    }
+}
+
+const upload = multer(configuracionMulter).single('imagen');
+
+exports.formCrearCuenta = (req, res) => {
     res.render('crear-cuenta', {
         nombrePagina: 'Crea tu cuenta en devJobs',
         tagline: 'Comienza a publicar tus vacantes gratis, solo debes crear una cuenta'
@@ -19,7 +65,7 @@ exports.validarRegistro = async (req, res, next) => {
         body('confirmar').not().isEmpty().withMessage('Confirmar password es obligatorio').escape(),
         body('confirmar').equals(req.body.password).withMessage('Los passwords no son iguales')
     ];
- 
+
     await Promise.all(rules.map(validation => validation.run(req)));
     const errores = validationResult(req);
     //si hay errores
@@ -32,7 +78,7 @@ exports.validarRegistro = async (req, res, next) => {
         });
         return;
     }
- 
+
     //si toda la validacion es correcta
     next();
 }
@@ -52,8 +98,8 @@ exports.crearUsuario = async (req, res, next) => {
 }
 
 // formulario para iniciar sesion
-exports.formIniciarSesion = (req,res) => {
-    res.render('iniciar-sesion',{
+exports.formIniciarSesion = (req, res) => {
+    res.render('iniciar-sesion', {
         nombrePagina: 'Iniciar Sesion en DevJobs'
     })
 }
@@ -64,18 +110,24 @@ exports.formEditarPerfil = (req, res) => {
         nombrePagina: 'Edita tu perfil en DevJobs',
         usuario: req.user,
         cerrarSesion: true,
-        nombre: req.user.nombre
+        nombre: req.user.nombre,
+        imagen: req.user.imagen
     })
 }
+
 // guardar cambios de editar perfil
-exports.editarPerfil = async (req,res) => {
+exports.editarPerfil = async (req, res) => {
     const usuario = await Usuarios.findById(req.user._id);
 
     usuario.nombre = req.body.nombre;
     usuario.email = req.body.email;
 
-    if(req.body.password){
+    if (req.body.password) {
         usuario.password = req.body.password;
+    }
+
+    if (req.file) {
+        usuario.imagen = req.file.filename;
     }
 
     await usuario.save();
@@ -94,22 +146,23 @@ exports.validarPerfil = async (req, res, next) => {
         body("email").isEmail().withMessage("El correo no puede ir vacio").escape(),
         body("nombre").isEmpty().escape(),
     ];
-    
-      await Promise.all(rules.map((validation) => validation.run(req)));
-      const errores = validationResult(req);
+
+    await Promise.all(rules.map((validation) => validation.run(req)));
+    const errores = validationResult(req);
     // validar
-    if(errores) {
+    if (errores) {
         // Recargar la vista con los errores
-        req.flash("error",errores.array().map((error) => error.msg));
-            
-            res.render('editar-perfil', {
-                nombrePagina: 'Edita tu perfil en DevJobs',
-                usuario: req.user,
-                cerrarSesion: true,
-                nombre: req.user.nombre,
-                mensajes: req.flash()
-            });
-            return;
-        }
-    next();
+        req.flash("error", errores.array().map((error) => error.msg));
+
+        res.render('editar-perfil', {
+            nombrePagina: 'Edita tu perfil en DevJobs',
+            usuario: req.user,
+            cerrarSesion: true,
+            nombre: req.user.nombre,
+            imagen: req.user.imagen,
+            mensajes: req.flash()
+        });
+        return;
+    }
+    next(); // todo bien, siguiente middleware
 }

@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 const Vacante = mongoose.model('Vacante');
-const { body, validationResult } = require("express-validator"); 
+const { body, validationResult } = require("express-validator");
 
 exports.formularioNuevaVacante = (req, res) => {
     res.render('nueva-vacante', {
         nombrePagina: 'Nueva Vacante',
         tagline: 'Llena el formulario y publica tu vacante',
         cerrarSesion: true,
-        nombre: req.user.nombre
+        nombre: req.user.nombre,
+        imagen: req.user.imagen
     });
 }
 
@@ -15,52 +16,53 @@ exports.formularioNuevaVacante = (req, res) => {
 exports.agregarVacante = async (req, res) => {
     const vacante = new Vacante(req.body);
 
-   // crear arreglo de habilidades (skills)
-   vacante.skills = req.body.skills.split(',');
+    // crear arreglo de habilidades (skills)
+    vacante.skills = req.body.skills.split(',');
 
-   // usuario autor de la vancate
-   vacante.autor = req.user._id;
+    // usuario autor de la vancate
+    vacante.autor = req.user._id;
 
     //almacenarlo en la base de datos
     const nuevaVacante = await vacante.save();
 
     //redireccionar
     res.redirect(`/vacantes/${nuevaVacante.url}`);
-} 
+}
 
 // muestra una vacante
 exports.mostrarVacante = async (req, res, next) => {
     const vacante = await Vacante.findOne({ url: req.params.url });
-    
+
     // si no hay resultados
-    if(!vacante) return next();
+    if (!vacante) return next();
 
     res.render('vacante', {
         vacante,
-        nombrePagina : vacante.titulo,
+        nombrePagina: vacante.titulo,
         barra: true
     })
 }
 
-exports.formEditarVacante = async(req,res,next) => {
+exports.formEditarVacante = async (req, res, next) => {
     const vacante = await Vacante.findOne({ url: req.params.url });
 
-    if(!vacante) return next;
+    if (!vacante) return next;
 
     res.render('editar-vacante', {
         vacante,
         nombrePagina: `Editar - ${vacante.titulo}`,
         cerrarSesion: true,
-        nombre: req.user.nombre
+        nombre: req.user.nombre,
+        imagen: req.user.imagen
     })
 }
 
-exports.editarVacante = async (req,res) => {
+exports.editarVacante = async (req, res) => {
     const vacanteActualizada = req.body;
 
     vacanteActualizada.skills = req.body.skills.split(',');
 
-    const vacante = await Vacante.findOneAndUpdate({url: req.params.url}, vacanteActualizada, {
+    const vacante = await Vacante.findOneAndUpdate({ url: req.params.url }, vacanteActualizada, {
         new: true,
         runValidators: true
     });
@@ -77,33 +79,33 @@ exports.validarVacante = async (req, res, next) => {
         body("ubicacion").not().isEmpty().withMessage("Agrega una Ubicación").escape(),
         body("contrato").not().isEmpty().withMessage("Selecciona el Tipo de Contrato").escape(),
         body("skills").not().isEmpty().withMessage("Agrega al menos una habilidad").escape(),
-      ];
+    ];
 
-      await Promise.all(rules.map((validation) => validation.run(req)));
-      const errores = validationResult(req);
+    await Promise.all(rules.map((validation) => validation.run(req)));
+    const errores = validationResult(req);
     // validar
-    if(errores) {
+    if (errores) {
         // Recargar la vista con los errores
-        req.flash("error",errores.array().map((error) => error.msg));
+        req.flash("error", errores.array().map((error) => error.msg));
 
-            res.render('nueva-vacante', {
-                nombrePagina: 'Nueva Vacante',
-                tagline: 'Llena el formulario y publica tu vacante',
-                cerrarSesion: true,
-                nombre : req.user.nombre,
-                mensajes: req.flash()
-            });
-            return;
-        }
+        res.render('nueva-vacante', {
+            nombrePagina: 'Nueva Vacante',
+            tagline: 'Llena el formulario y publica tu vacante',
+            cerrarSesion: true,
+            nombre: req.user.nombre,
+            mensajes: req.flash()
+        });
+        return;
+    }
     next();
 }
 
-exports.eliminarVacante = async (req,res) => {
+exports.eliminarVacante = async (req, res) => {
     const { id } = req.params;
 
     const vacante = await Vacante.findById(id);
 
-    if(verificarAutor(vacante, req.user)) {
+    if (verificarAutor(vacante, req.user)) {
         // todo bien, si es el usuario, eliminar
         vacante.remove();
         res.status(200).send('Vacante Eliminada Correctamente');
@@ -115,9 +117,8 @@ exports.eliminarVacante = async (req,res) => {
 }
 
 const verificarAutor = (vacante = {}, usuario = {}) => {
-    if(!vacante.autor.equals(usuario._id)) {
+    if (!vacante.autor.equals(usuario._id)) {
         return false;
     }
     return true;
 }
- 

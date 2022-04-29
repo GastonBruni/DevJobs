@@ -31,7 +31,7 @@ exports.agregarVacante = async (req, res) => {
 
 // muestra una vacante
 exports.mostrarVacante = async (req, res, next) => {
-    const vacante = await Vacante.findOne({ url: req.params.url });
+    const vacante = await Vacante.findOne({ url: req.params.url }).populate('autor');
 
     // si no hay resultados
     if (!vacante) return next();
@@ -45,7 +45,7 @@ exports.mostrarVacante = async (req, res, next) => {
 
 exports.formEditarVacante = async (req, res, next) => {
     const vacante = await Vacante.findOne({ url: req.params.url });
-
+   
     if (!vacante) return next;
 
     res.render('editar-vacante', {
@@ -80,11 +80,11 @@ exports.validarVacante = async (req, res, next) => {
         body("contrato").not().isEmpty().withMessage("Selecciona el Tipo de Contrato").escape(),
         body("skills").not().isEmpty().withMessage("Agrega al menos una habilidad").escape(),
     ];
-
     await Promise.all(rules.map((validation) => validation.run(req)));
     const errores = validationResult(req);
+
     // validar
-    if (errores) {
+    if (!errores) {
         // Recargar la vista con los errores
         req.flash("error", errores.array().map((error) => error.msg));
 

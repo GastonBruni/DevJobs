@@ -32,6 +32,9 @@ module.exports = () => {
     // Cerrar Sesion
     router.get('/cerrar-sesion', authController.verificarUsuario, authController.cerrarSesion);
 
+    // Resetear Password (emails)
+    router.get('/reestablecer-password', authController.formRestablecerPassword);
+    router.post('/reestablecer-password', authController.enviarToken);
 
     // Panel de administracion
     router.get('/administracion', authController.verificarUsuario, authController.mostrarPanel);

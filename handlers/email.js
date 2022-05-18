@@ -2,7 +2,6 @@ const emailConfig = require('../config/email');
 const nodemailer = require('nodemailer');
 const hbs = require('nodemailer-express-handlebars');
 const util = require('util');
-const email = require('../config/email');
 
 let transport = nodemailer.createTransport({
     host: emailConfig.host,
@@ -10,5 +9,31 @@ let transport = nodemailer.createTransport({
     auth: {
         user: emailConfig.user,
         pass: emailConfig.pass
-    }   
-})
+    }
+});
+
+// Utilizar templates de Handlebars
+transport.use('compile',hbs({
+    viewEngine: {
+       extname: 'handlebars',
+       defaultLayout: false,
+    },
+    viewPath: __dirname+'/../views/emails',
+    extName: '.handlebars',
+}));
+
+exports.enviar = async (opciones) => {
+
+    const opcionesEmail = {
+        from: 'devJobs <noreply@devjobs.com',
+        to: opciones.usuario.email,
+        subject: opciones.subject,
+        template: opciones.archivo,
+        context: {
+            resetUrl: opciones.resetUrl
+        },
+    };
+
+    const sendMail = util.promisify(transport.sendMail, transport);
+    return sendMail.call(transport, opcionesEmail);
+}
